@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VlessVPN - Конфигурация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -188,6 +187,11 @@
             background: white;
             border-radius: 10px;
             margin: 20px auto;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .qr-title {
@@ -307,10 +311,31 @@
             z-index: 1000;
             transform: translateX(150%);
             transition: transform 0.5s;
+            opacity: 0;
         }
         
         .notification.show {
             transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.error {
+            background: #f72585;
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #4cc9f0;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
@@ -347,7 +372,6 @@
             }
         }
         
-        /* Стили для скроллбара */
         .vless-link::-webkit-scrollbar {
             width: 8px;
         }
@@ -373,19 +397,28 @@
         <div class="config-info">
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-user"></i> Имя устройства:</div>
-                <div class="info-value" id="device-name">Загрузка...</div>
+                <div class="info-value" id="device-name">
+                    <span class="loading"></span> Загрузка...
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-server"></i> Тип VPN:</div>
-                <div class="info-value" id="vpn-type">Загрузка... <span class="status-badge" id="status-badge"></span></div>
+                <div class="info-value" id="vpn-type">
+                    <span class="loading"></span> Загрузка... 
+                    <span class="status-badge" id="status-badge"></span>
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-calendar-alt"></i> Действует до:</div>
-                <div class="info-value" id="expiry-date">Загрузка...</div>
+                <div class="info-value" id="expiry-date">
+                    <span class="loading"></span> Загрузка...
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-globe"></i> Сервер:</div>
-                <div class="info-value" id="server-info">Загрузка...</div>
+                <div class="info-value" id="server-info">
+                    <span class="loading"></span> Загрузка...
+                </div>
             </div>
         </div>
         
@@ -399,14 +432,22 @@
                 </div>
             </div>
             <div class="vless-link" id="vless-link">
-                Загрузка конфигурации...
+                <div style="text-align: center; padding: 20px;">
+                    <span class="loading"></span><br>
+                    Загрузка конфигурации...
+                </div>
             </div>
         </div>
         
         <div class="qr-section">
             <h3 class="qr-title"><i class="fas fa-qrcode"></i> QR-код для быстрой настройки</h3>
             <p style="margin-bottom: 20px; color: #b8b8d1;">Отсканируйте QR-код камерой телефона для автоматической настройки</p>
-            <div class="qr-container" id="qr-container"></div>
+            <div class="qr-container" id="qr-container">
+                <div style="text-align: center;">
+                    <span class="loading"></span><br>
+                    <small>Генерация QR-кода...</small>
+                </div>
+            </div>
             <p style="margin-top: 15px; color: #a0a0c0; font-size: 0.9rem;">Или используйте кнопку "Копировать" выше</p>
         </div>
         
@@ -454,7 +495,7 @@
     </div>
     
     <div class="notification" id="notification">
-        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-check-circle" id="notification-icon"></i>
         <span id="notification-text">Текст уведомления</span>
     </div>
 
@@ -473,6 +514,7 @@
         const copyFullBtn = document.getElementById('copy-full-btn');
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notification-text');
+        const notificationIcon = document.getElementById('notification-icon');
         
         // Основные параметры конфигурации
         const config = {
@@ -484,16 +526,13 @@
             path: urlParams.get('path') || '/',
             remark: decodeURIComponent(urlParams.get('remark') || 'VlessVPN'),
             expiry: urlParams.get('expiry') || '',
-            vpnType: urlParams.get('vpnType') || 'regular'
-        };
-        
-        // Дополнительные параметры для Reality
-        const realityConfig = {
+            vpnType: urlParams.get('vpnType') || 'regular',
+            // Reality параметры
             pbk: urlParams.get('pbk') || '',
             sid: urlParams.get('sid') || '',
             fp: urlParams.get('fp') || 'chrome',
             flow: urlParams.get('flow') || 'xtls-rprx-vision',
-            sni: urlParams.get('sni') || config.host
+            sni: urlParams.get('sni') || urlParams.get('host') || ''
         };
         
         // Функция для генерации VLESS ссылки
@@ -507,11 +546,11 @@
             if (config.type === 'tcp') {
                 // Reality конфигурация
                 vlessLink += `type=tcp&security=reality&encryption=none`;
-                vlessLink += `&pbk=${realityConfig.pbk || ''}`;
-                vlessLink += `&fp=${realityConfig.fp}`;
-                vlessLink += `&sni=${realityConfig.sni}`;
-                vlessLink += `&sid=${realityConfig.sid || ''}`;
-                vlessLink += `&flow=${realityConfig.flow}`;
+                if (config.pbk) vlessLink += `&pbk=${config.pbk}`;
+                vlessLink += `&fp=${config.fp}`;
+                if (config.sni) vlessLink += `&sni=${config.sni}`;
+                if (config.sid) vlessLink += `&sid=${config.sid}`;
+                vlessLink += `&flow=${config.flow}`;
             } else {
                 // WS конфигурация (для белых списков)
                 vlessLink += `type=ws&security=none&encryption=none`;
@@ -529,12 +568,12 @@
             if (!dateString) return 'Не указано';
             
             try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('ru-RU', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
+                // Если дата в формате YYYY-MM-DD
+                if (dateString.includes('-')) {
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}.${month}.${year}`;
+                }
+                return dateString;
             } catch (e) {
                 return dateString;
             }
@@ -546,11 +585,14 @@
             notification.className = 'notification';
             
             if (isSuccess) {
+                notificationIcon.className = 'fas fa-check-circle';
                 notification.style.background = '#4cc9f0';
                 notification.style.color = '#1a1a2e';
             } else {
+                notificationIcon.className = 'fas fa-exclamation-circle';
                 notification.style.background = '#f72585';
                 notification.style.color = '#fff';
+                notification.classList.add('error');
             }
             
             setTimeout(() => {
@@ -570,16 +612,19 @@
                 })
                 .catch(err => {
                     console.error('Ошибка копирования: ', err);
-                    showNotification('Ошибка копирования. Попробуйте вручную.', false);
                     
                     // Fallback для старых браузеров
                     const textArea = document.createElement('textarea');
                     textArea.value = text;
                     document.body.appendChild(textArea);
                     textArea.select();
-                    document.execCommand('copy');
+                    try {
+                        document.execCommand('copy');
+                        showNotification('Конфигурация скопирована!');
+                    } catch (e) {
+                        showNotification('Ошибка копирования. Скопируйте вручную.', false);
+                    }
                     document.body.removeChild(textArea);
-                    showNotification('Конфигурация скопирована!');
                 });
         }
         
@@ -587,18 +632,30 @@
         function generateQRCode(vlessLink) {
             if (!vlessLink) return;
             
-            // Очищаем контейнер
-            qrContainer.innerHTML = '';
+            // Загружаем библиотеку QRCode динамически
+            if (typeof QRCode === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                script.onload = () => createQR(vlessLink);
+                document.head.appendChild(script);
+            } else {
+                createQR(vlessLink);
+            }
             
-            // Генерируем QR-код
-            new QRCode(qrContainer, {
-                text: vlessLink,
-                width: 200,
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            function createQR(link) {
+                // Очищаем контейнер
+                qrContainer.innerHTML = '';
+                
+                // Генерируем QR-код
+                new QRCode(qrContainer, {
+                    text: link,
+                    width: 160,
+                    height: 160,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
         }
         
         // Функция для определения типа VPN
@@ -626,8 +683,11 @@
             const vlessLink = generateVlessLink();
             
             if (!vlessLink) {
-                vlessLinkEl.textContent = 'Ошибка: Недостаточно данных для генерации конфигурации';
-                showNotification('Ошибка загрузки конфигурации', false);
+                const errorMsg = 'Ошибка: Недостаточно данных для генерации конфигурации';
+                vlessLinkEl.innerHTML = `<div style="color: #f72585; text-align: center; padding: 20px;">
+                    <i class="fas fa-exclamation-triangle"></i><br>${errorMsg}
+                </div>`;
+                showNotification(errorMsg, false);
                 return;
             }
             
@@ -635,16 +695,18 @@
             const vpnInfo = getVpnTypeInfo();
             
             // Заполняем информацию
-            deviceNameEl.textContent = config.remark;
-            vpnTypeEl.textContent = vpnInfo.name;
+            deviceNameEl.innerHTML = `<i class="fas fa-check" style="color: #4cc9f0;"></i> ${config.remark}`;
+            vpnTypeEl.innerHTML = `<i class="fas fa-check" style="color: #4cc9f0;"></i> ${vpnInfo.name}`;
             statusBadgeEl.textContent = vpnInfo.badgeText;
             statusBadgeEl.className = `status-badge ${vpnInfo.badgeClass}`;
             
-            expiryDateEl.textContent = formatDate(config.expiry);
-            serverInfoEl.textContent = vpnInfo.server;
+            expiryDateEl.innerHTML = `<i class="fas fa-check" style="color: #4cc9f0;"></i> ${formatDate(config.expiry) || 'Не указано'}`;
+            serverInfoEl.innerHTML = `<i class="fas fa-check" style="color: #4cc9f0;"></i> ${vpnInfo.server}`;
             
             // Отображаем VLESS ссылку
-            vlessLinkEl.textContent = vlessLink;
+            vlessLinkEl.innerHTML = `<div style="position: relative;">
+                <code style="display: block; padding-right: 100px;">${vlessLink}</code>
+            </div>`;
             
             // Генерируем QR-код
             generateQRCode(vlessLink);
@@ -654,79 +716,31 @@
                 copyToClipboard(vlessLink);
             });
             
-            // Автоматическое копирование при первом открытии (опционально)
+            // Автоматическое копирование при первом открытии
             const isFirstVisit = !sessionStorage.getItem('configVisited');
             if (isFirstVisit && vlessLink.length < 500) {
                 setTimeout(() => {
                     copyToClipboard(vlessLink);
                     sessionStorage.setItem('configVisited', 'true');
-                }, 1000);
+                }, 1500);
             }
             
-            // Сохраняем историю в localStorage для быстрого доступа
-            try {
-                const history = JSON.parse(localStorage.getItem('vpnConfigHistory') || '[]');
-                
-                // Проверяем, есть ли уже такая конфигурация в истории
-                const existingIndex = history.findIndex(item => item.uuid === config.uuid);
-                
-                const configItem = {
-                    uuid: config.uuid,
-                    remark: config.remark,
-                    vlessLink: vlessLink,
-                    vpnType: config.vpnType,
-                    expiry: config.expiry,
-                    timestamp: new Date().toISOString()
-                };
-                
-                if (existingIndex !== -1) {
-                    history[existingIndex] = configItem;
-                } else {
-                    history.unshift(configItem);
-                }
-                
-                // Сохраняем только последние 10 конфигураций
-                if (history.length > 10) {
-                    history.pop();
-                }
-                
-                localStorage.setItem('vpnConfigHistory', JSON.stringify(history));
-            } catch (e) {
-                console.error('Ошибка сохранения в localStorage:', e);
-            }
+            // Показываем успешное уведомление
+            setTimeout(() => {
+                showNotification('Конфигурация успешно загружена!');
+            }, 1000);
         }
         
         // Запускаем инициализацию при загрузке страницы
         document.addEventListener('DOMContentLoaded', initPage);
         
         // Добавляем обработчик для копирования по клику на ссылку
-        vlessLinkEl.addEventListener('click', function() {
-            copyToClipboard(this.textContent);
-        });
-        
-        // Обработка глубоких ссылок для мобильных приложений
-        function handleDeepLinks() {
-            // Если пользователь на мобильном устройстве, предлагаем открыть в приложении
-            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                const vlessLink = generateVlessLink();
-                if (vlessLink) {
-                    // Пытаемся открыть deep link для V2RayTun
-                    setTimeout(() => {
-                        window.location.href = `v2raytun://import/config/${encodeURIComponent(vlessLink)}`;
-                    }, 1000);
-                    
-                    // Если deep link не сработал, показываем инструкцию
-                    setTimeout(() => {
-                        if (document.hasFocus()) {
-                            showNotification('Скопируйте ссылку и вставьте в V2RayTun вручную');
-                        }
-                    }, 2000);
-                }
+        vlessLinkEl.addEventListener('click', function(e) {
+            if (e.target.tagName === 'CODE') {
+                const text = e.target.textContent;
+                copyToClipboard(text);
             }
-        }
-        
-        // Запускаем обработку глубоких ссылок
-        setTimeout(handleDeepLinks, 500);
+        });
     </script>
 </body>
 </html>
