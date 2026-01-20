@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VlessVPN - Конфигурация</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            color: #4cc9f0;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header h1 i {
+            color: #f72585;
+        }
+        
+        .subtitle {
+            color: #b8b8d1;
+            font-size: 1.1rem;
+        }
+        
+        .config-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4cc9f0;
+        }
+        
+        .info-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #4cc9f0;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #f0f0f0;
+            word-break: break-all;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-active {
+            background: rgba(76, 201, 240, 0.2);
+            color: #4cc9f0;
+            border: 1px solid #4cc9f0;
+        }
+        
+        .status-whitelist {
+            background: rgba(247, 37, 133, 0.2);
+            color: #f72585;
+            border: 1px solid #f72585;
+        }
+        
+        .config-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .config-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: #f72585;
+        }
+        
+        .config-title h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .vless-link {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            word-break: break-all;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4cc9f0;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #3aa8cc;
+            transform: translateY(-2px);
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+        
+        .qr-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px auto;
+        }
+        
+        .qr-title {
+            margin-bottom: 20px;
+            color: #4cc9f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #f72585;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background: #4cc9f0;
+            color: #1a1a2e;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #b8b8d1;
+        }
+        
+        .step-desc {
+            color: #a0a0c0;
+            font-size: 0.95rem;
+        }
+        
+        .app-links {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .app-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4cc9f0 0%, #3aa8cc 100%);
+            color: #1a1a2e;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .app-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+        }
+        
+        .app-btn.ios {
+            background: linear-gradient(135deg, #f72585 0%, #d41773 100%);
+        }
+        
+        .app-btn.ios:hover {
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b8b8d1;
+            font-size: 0.9rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4cc9f0;
+            color: #1a1a2e;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.5s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .info-label {
+                min-width: auto;
+            }
+            
+            .vless-link {
+                font-size: 0.8rem;
+                padding: 15px;
+            }
+            
+            .app-links {
+                flex-direction: column;
+            }
+            
+            .app-btn {
+                justify-content: center;
+            }
+        }
+        
+        /* Стили для скроллбара */
+        .vless-link::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .vless-link::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .vless-link::-webkit-scrollbar-thumb {
+            background: #4cc9f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> VlessVPN Конфигурация</h1>
+            <p class="subtitle">Ваша персональная конфигурация для безопасного подключения</p>
+        </div>
+        
+        <div class="config-info">
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-user"></i> Имя устройства:</div>
+                <div class="info-value" id="device-name">Загрузка...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-server"></i> Тип VPN:</div>
+                <div class="info-value" id="vpn-type">Загрузка... <span class="status-badge" id="status-badge"></span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-calendar-alt"></i> Действует до:</div>
+                <div class="info-value" id="expiry-date">Загрузка...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-globe"></i> Сервер:</div>
+                <div class="info-value" id="server-info">Загрузка...</div>
+            </div>
+        </div>
+        
+        <div class="config-box">
+            <div class="config-title">
+                <h3><i class="fas fa-key"></i> Конфигурация VLESS</h3>
+                <div class="config-actions">
+                    <button class="copy-btn" id="copy-full-btn">
+                        <i class="fas fa-copy"></i> Копировать
+                    </button>
+                </div>
+            </div>
+            <div class="vless-link" id="vless-link">
+                Загрузка конфигурации...
+            </div>
+        </div>
+        
+        <div class="qr-section">
+            <h3 class="qr-title"><i class="fas fa-qrcode"></i> QR-код для быстрой настройки</h3>
+            <p style="margin-bottom: 20px; color: #b8b8d1;">Отсканируйте QR-код камерой телефона для автоматической настройки</p>
+            <div class="qr-container" id="qr-container"></div>
+            <p style="margin-top: 15px; color: #a0a0c0; font-size: 0.9rem;">Или используйте кнопку "Копировать" выше</p>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Инструкция по настройке</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">Установите V2RayTun</div>
+                    <div class="step-desc">Скачайте приложение V2RayTun для вашего устройства</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Импортируйте конфигурацию</div>
+                    <div class="step-desc">Отсканируйте QR-код выше или скопируйте VLESS ссылку</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Подключитесь</div>
+                    <div class="step-desc">В приложении нажмите "Подключиться" и включите VPN</div>
+                </div>
+            </div>
+            
+            <div class="app-links">
+                <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android" class="app-btn" target="_blank">
+                    <i class="fab fa-google-play"></i> Скачать для Android
+                </a>
+                <a href="https://apps.apple.com/ru/app/v2raytun/id6476628951" class="app-btn ios" target="_blank">
+                    <i class="fab fa-apple"></i> Скачать для iOS
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 VlessVPN. Все права защищены.</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">Конфигурация сгенерирована автоматически и является уникальной для вашего устройства</p>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Текст уведомления</span>
+    </div>
+
+    <script>
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Элементы DOM
+        const deviceNameEl = document.getElementById('device-name');
+        const vpnTypeEl = document.getElementById('vpn-type');
+        const statusBadgeEl = document.getElementById('status-badge');
+        const expiryDateEl = document.getElementById('expiry-date');
+        const serverInfoEl = document.getElementById('server-info');
+        const vlessLinkEl = document.getElementById('vless-link');
+        const qrContainer = document.getElementById('qr-container');
+        const copyFullBtn = document.getElementById('copy-full-btn');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        
+        // Основные параметры конфигурации
+        const config = {
+            uuid: urlParams.get('uuid') || '',
+            server: urlParams.get('server') || '',
+            port: urlParams.get('port') || '',
+            type: urlParams.get('type') || 'tcp',
+            host: urlParams.get('host') || '',
+            path: urlParams.get('path') || '/',
+            remark: decodeURIComponent(urlParams.get('remark') || 'VlessVPN'),
+            expiry: urlParams.get('expiry') || '',
+            vpnType: urlParams.get('vpnType') || 'regular'
+        };
+        
+        // Дополнительные параметры для Reality
+        const realityConfig = {
+            pbk: urlParams.get('pbk') || '',
+            sid: urlParams.get('sid') || '',
+            fp: urlParams.get('fp') || 'chrome',
+            flow: urlParams.get('flow') || 'xtls-rprx-vision',
+            sni: urlParams.get('sni') || config.host
+        };
+        
+        // Функция для генерации VLESS ссылки
+        function generateVlessLink() {
+            if (!config.uuid || !config.server || !config.port) {
+                return '';
+            }
+            
+            let vlessLink = `vless://${config.uuid}@${config.server}:${config.port}?`;
+            
+            if (config.type === 'tcp') {
+                // Reality конфигурация
+                vlessLink += `type=tcp&security=reality&encryption=none`;
+                vlessLink += `&pbk=${realityConfig.pbk || ''}`;
+                vlessLink += `&fp=${realityConfig.fp}`;
+                vlessLink += `&sni=${realityConfig.sni}`;
+                vlessLink += `&sid=${realityConfig.sid || ''}`;
+                vlessLink += `&flow=${realityConfig.flow}`;
+            } else {
+                // WS конфигурация (для белых списков)
+                vlessLink += `type=ws&security=none&encryption=none`;
+                vlessLink += `&path=${config.path}`;
+                vlessLink += `&host=${config.host || config.server}`;
+            }
+            
+            vlessLink += `#${encodeURIComponent(config.remark)}`;
+            
+            return vlessLink;
+        }
+        
+        // Функция для форматирования даты
+        function formatDate(dateString) {
+            if (!dateString) return 'Не указано';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
+        // Функция для отображения уведомления
+        function showNotification(message, isSuccess = true) {
+            notificationText.textContent = message;
+            notification.className = 'notification';
+            
+            if (isSuccess) {
+                notification.style.background = '#4cc9f0';
+                notification.style.color = '#1a1a2e';
+            } else {
+                notification.style.background = '#f72585';
+                notification.style.color = '#fff';
+            }
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Функция для копирования в буфер обмена
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    showNotification('Конфигурация скопирована в буфер обмена!');
+                })
+                .catch(err => {
+                    console.error('Ошибка копирования: ', err);
+                    showNotification('Ошибка копирования. Попробуйте вручную.', false);
+                    
+                    // Fallback для старых браузеров
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showNotification('Конфигурация скопирована!');
+                });
+        }
+        
+        // Функция для генерации QR-кода
+        function generateQRCode(vlessLink) {
+            if (!vlessLink) return;
+            
+            // Очищаем контейнер
+            qrContainer.innerHTML = '';
+            
+            // Генерируем QR-код
+            new QRCode(qrContainer, {
+                text: vlessLink,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+        
+        // Функция для определения типа VPN
+        function getVpnTypeInfo() {
+            if (config.vpnType === 'whitelist') {
+                return {
+                    name: '📜 Белые списки (обход)',
+                    badgeClass: 'status-whitelist',
+                    badgeText: 'WHITELIST',
+                    server: '🌐 Смешанные серверы'
+                };
+            } else {
+                return {
+                    name: '🌍 Зарубежные сервисы',
+                    badgeClass: 'status-active',
+                    badgeText: 'REGULAR',
+                    server: '🇳🇱 Нидерланды'
+                };
+            }
+        }
+        
+        // Инициализация страницы
+        function initPage() {
+            // Генерируем VLESS ссылку
+            const vlessLink = generateVlessLink();
+            
+            if (!vlessLink) {
+                vlessLinkEl.textContent = 'Ошибка: Недостаточно данных для генерации конфигурации';
+                showNotification('Ошибка загрузки конфигурации', false);
+                return;
+            }
+            
+            // Получаем информацию о типе VPN
+            const vpnInfo = getVpnTypeInfo();
+            
+            // Заполняем информацию
+            deviceNameEl.textContent = config.remark;
+            vpnTypeEl.textContent = vpnInfo.name;
+            statusBadgeEl.textContent = vpnInfo.badgeText;
+            statusBadgeEl.className = `status-badge ${vpnInfo.badgeClass}`;
+            
+            expiryDateEl.textContent = formatDate(config.expiry);
+            serverInfoEl.textContent = vpnInfo.server;
+            
+            // Отображаем VLESS ссылку
+            vlessLinkEl.textContent = vlessLink;
+            
+            // Генерируем QR-код
+            generateQRCode(vlessLink);
+            
+            // Настройка кнопки копирования
+            copyFullBtn.addEventListener('click', () => {
+                copyToClipboard(vlessLink);
+            });
+            
+            // Автоматическое копирование при первом открытии (опционально)
+            const isFirstVisit = !sessionStorage.getItem('configVisited');
+            if (isFirstVisit && vlessLink.length < 500) {
+                setTimeout(() => {
+                    copyToClipboard(vlessLink);
+                    sessionStorage.setItem('configVisited', 'true');
+                }, 1000);
+            }
+            
+            // Сохраняем историю в localStorage для быстрого доступа
+            try {
+                const history = JSON.parse(localStorage.getItem('vpnConfigHistory') || '[]');
+                
+                // Проверяем, есть ли уже такая конфигурация в истории
+                const existingIndex = history.findIndex(item => item.uuid === config.uuid);
+                
+                const configItem = {
+                    uuid: config.uuid,
+                    remark: config.remark,
+                    vlessLink: vlessLink,
+                    vpnType: config.vpnType,
+                    expiry: config.expiry,
+                    timestamp: new Date().toISOString()
+                };
+                
+                if (existingIndex !== -1) {
+                    history[existingIndex] = configItem;
+                } else {
+                    history.unshift(configItem);
+                }
+                
+                // Сохраняем только последние 10 конфигураций
+                if (history.length > 10) {
+                    history.pop();
+                }
+                
+                localStorage.setItem('vpnConfigHistory', JSON.stringify(history));
+            } catch (e) {
+                console.error('Ошибка сохранения в localStorage:', e);
+            }
+        }
+        
+        // Запускаем инициализацию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initPage);
+        
+        // Добавляем обработчик для копирования по клику на ссылку
+        vlessLinkEl.addEventListener('click', function() {
+            copyToClipboard(this.textContent);
+        });
+        
+        // Обработка глубоких ссылок для мобильных приложений
+        function handleDeepLinks() {
+            // Если пользователь на мобильном устройстве, предлагаем открыть в приложении
+            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                const vlessLink = generateVlessLink();
+                if (vlessLink) {
+                    // Пытаемся открыть deep link для V2RayTun
+                    setTimeout(() => {
+                        window.location.href = `v2raytun://import/config/${encodeURIComponent(vlessLink)}`;
+                    }, 1000);
+                    
+                    // Если deep link не сработал, показываем инструкцию
+                    setTimeout(() => {
+                        if (document.hasFocus()) {
+                            showNotification('Скопируйте ссылку и вставьте в V2RayTun вручную');
+                        }
+                    }, 2000);
+                }
+            }
+        }
+        
+        // Запускаем обработку глубоких ссылок
+        setTimeout(handleDeepLinks, 500);
+    </script>
+</body>
+</html>
